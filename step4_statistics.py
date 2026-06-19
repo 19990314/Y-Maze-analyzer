@@ -35,9 +35,9 @@ import pandas as pd
 INPUT_GLOB        = "*_clips.csv"
 LABELED_FILE      = "ymaze_time_log_labeled.csv"   # output of label_trial_hits.py
 RAW_OUT_NAME      = "ymaze_time_log_raw_JCincluded.csv"
-STATS_OUT_NAME    = "ymaze_time_stats2.csv"           # all trials (unchanged)
-STATS_HITS_NAME   = "ymaze_time_stats_hits2.csv"      # correct == 1
-STATS_MISSES_NAME = "ymaze_time_stats_misses2.csv"    # correct == 0
+STATS_OUT_NAME    = "ymaze_time_stats.csv"           # all trials (unchanged)
+STATS_HITS_NAME   = "ymaze_time_stats_hits.csv"      # correct == 1
+STATS_MISSES_NAME = "ymaze_time_stats_misses.csv"    # correct == 0
 
 EXPECTED_TRIALS_PER_DAY = 5
 
@@ -97,7 +97,15 @@ def load_and_concat(files):
 
 
 def compute_stats(raw_df):
-    """Aggregate mean/std/n duration per (ID, Day, Group, time_point), wide format."""
+    """
+    Aggregate mean/std/n duration per (ID, Day, Group, time_point), wide format.
+    Also adds performance columns per mouse-day:
+        n_hits          — number of correct==1 trials  (counted via t1 rows only
+                          since both t1 and t2 of a trial share the same label)
+        n_trials_total  — total number of trials (t1 row count)
+        pct_correct     — n_hits / n_trials_total * 100
+    If the 'correct' column is absent, these columns are filled with NaN.
+    """
     needed = {"ID", "Day", "Group", "time_point", "duration_s", "x_split"}
     missing = needed - set(raw_df.columns)
     if missing:
@@ -133,6 +141,29 @@ def compute_stats(raw_df):
 
     wide = wide[ordered].reset_index().sort_values(["ID", "Day"])
     wide["Day"] = pd.to_numeric(wide["Day"], errors="coerce").astype("Int64")
+
+    # ── Performance score ──────────────────────────────────────────────────────
+    # Use t1 rows only — each trial has exactly one t1, so this counts unique
+    # trials without double-counting the paired t2.
+    if "correct" in raw_df.columns:
+        t1_rows = raw_df[raw_df["time_point"] == "t1"].copy()
+        t1_rows["correct"] = pd.to_numeric(t1_rows["correct"], errors="coerce")
+        perf = (
+            t1_rows.groupby(["ID", "Day"])
+            .agg(
+                n_hits         =("correct", lambda x: (x == 1).sum()),
+                n_trials_total =("correct", "count"),
+            )
+            .reset_index()
+        )
+        perf["pct_correct"] = (perf["n_hits"] / perf["n_trials_total"] * 100).round(1)
+        perf["Day"] = pd.to_numeric(perf["Day"], errors="coerce").astype("Int64")
+        wide = wide.merge(perf, on=["ID", "Day"], how="left")
+    else:
+        wide["n_hits"]          = pd.NA
+        wide["n_trials_total"]  = pd.NA
+        wide["pct_correct"]     = pd.NA
+
     return wide
 
 
