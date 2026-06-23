@@ -33,11 +33,11 @@ import pandas as pd
 
 # ── file names ─────────────────────────────────────────────────────────────────
 INPUT_GLOB        = "*_clips.csv"
-LABELED_FILE      = "ymaze_time_log_labeled.csv"   # output of label_trial_hits.py
-RAW_OUT_NAME      = "ymaze_time_log_raw_JCincluded.csv"
-STATS_OUT_NAME    = "ymaze_time_stats.csv"           # all trials (unchanged)
-STATS_HITS_NAME   = "ymaze_time_stats_hits.csv"      # correct == 1
-STATS_MISSES_NAME = "ymaze_time_stats_misses.csv"    # correct == 0
+LABELED_FILE      = "ymaze_time_log_hitmisslabeled.csv"   # output of label_trial_hits.py
+RAW_OUT_NAME      = "ymaze_time_log_without_hitmisslabel.csv"
+STATS_OUT_NAME    = "ymaze_time_stats_alltrials.csv"           # all trials (unchanged)
+STATS_HITS_NAME   = "ymaze_time_stats_onlyhits.csv"      # correct == 1
+STATS_MISSES_NAME = "ymaze_time_stats_onlymisses.csv"    # correct == 0
 
 EXPECTED_TRIALS_PER_DAY = 5
 

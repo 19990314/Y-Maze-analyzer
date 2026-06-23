@@ -36,7 +36,7 @@ import pandas as pd
 
 
 # ── constants ──────────────────────────────────────────────────────────────────
-INPUT_FILE  = "ymaze_time_log_raw_JCincluded.csv"
+INPUT_FILE  = "ymaze_time_log_without_hitmisslabel.csv"
 OUTPUT_FILE = "ymaze_time_log_labeled.csv"
 
 BG     = "#16161f"
