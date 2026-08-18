@@ -27,25 +27,28 @@ THRESHOLD = 100
 
 
 def flag_suspicious(df, threshold):
+    """Flag rows where a T2 clip's stop_frame is within threshold frames of
+    the next clip's start_frame.  T1→T2 adjacency is intentionally excluded
+    because T2 always starts right after T1 ends (natural temporal sequence)."""
     rows = []
-    stops  = pd.to_numeric(df["stop_frame"],  errors="coerce").to_numpy(float)
-    starts = pd.to_numeric(df["start_frame"], errors="coerce").to_numpy(float)
+    labels = df["time_point"].astype(str).str.strip().str.lower().tolist()
+    stops  = pd.to_numeric(df["stop_frame"],  errors="coerce").tolist()
+    starts = pd.to_numeric(df["start_frame"], errors="coerce").tolist()
 
-    for i in range(len(df)):
-        s = stops[i]
-        if pd.isna(s):
+    for i in range(len(df) - 1):
+        if labels[i] != "t2":
             continue
-        for j, nb in [(i - 1, stops[i - 1] if i > 0 else float("nan")),
-                      (i - 1, starts[i - 1] if i > 0 else float("nan")),
-                      (i + 1, stops[i + 1] if i < len(df) - 1 else float("nan")),
-                      (i + 1, starts[i + 1] if i < len(df) - 1 else float("nan"))]:
-            if not pd.isna(nb) and 0 < abs(s - nb) <= threshold:
-                row = df.iloc[i].to_dict()
-                row["_row_in_file"] = i + 2          # +2 = 1-based + header row
-                row["_close_to"]    = f"row {j + 2} ({nb:.0f})"
-                row["_distance"]    = int(abs(s - nb))
-                rows.append(row)
-                break   # only flag once per suspicious row
+        t2_stop      = stops[i]
+        next_start   = starts[i + 1]
+        if pd.isna(t2_stop) or pd.isna(next_start):
+            continue
+        dist = abs(t2_stop - next_start)
+        if 0 < dist <= threshold:
+            row = df.iloc[i].to_dict()
+            row["_row_in_file"] = i + 2
+            row["_close_to"]    = f"next row {i + 3} start ({next_start:.0f})"
+            row["_distance"]    = int(dist)
+            rows.append(row)
     return rows
 
 

@@ -43,24 +43,22 @@ def load_csv(path):
 
 
 def flag_suspicious(df):
-    """Return a boolean Series: True where the row is suspicious."""
-    flags = pd.Series(False, index=df.index)
-    stops  = df["stop_frame"].to_numpy(dtype=float, na_value=float("nan"))
-    starts = df["start_frame"].to_numpy(dtype=float, na_value=float("nan"))
+    """Return a boolean Series: True where a T2 clip's stop_frame is within
+    THRESHOLD frames of the next clip's start_frame."""
+    flags  = pd.Series(False, index=df.index)
+    labels = df["time_point"].astype(str).str.strip().str.lower().tolist()
+    stops  = pd.to_numeric(df["stop_frame"],  errors="coerce").tolist()
+    starts = pd.to_numeric(df["start_frame"], errors="coerce").tolist()
 
-    for i in range(len(df)):
-        s = stops[i]
-        if pd.isna(s):
+    for i in range(len(df) - 1):
+        if labels[i] != "t2":
             continue
-        neighbours = []
-        if i > 0:
-            neighbours += [starts[i - 1], stops[i - 1]]
-        if i < len(df) - 1:
-            neighbours += [starts[i + 1], stops[i + 1]]
-        for nb in neighbours:
-            if not pd.isna(nb) and abs(s - nb) <= THRESHOLD and abs(s - nb) > 0:
-                flags.iloc[i] = True
-                break
+        t2_stop    = stops[i]
+        next_start = starts[i + 1]
+        if pd.isna(t2_stop) or pd.isna(next_start):
+            continue
+        if 0 < abs(t2_stop - next_start) <= THRESHOLD:
+            flags.iloc[i] = True
     return flags
 
 
