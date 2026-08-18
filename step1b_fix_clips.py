@@ -110,10 +110,10 @@ class FixClipsApp:
         tbl_frame = ttk.Frame(paned, padding=4)
         paned.add(tbl_frame, minsize=180)
 
-        legend = ttk.Label(tbl_frame,
+        # use grid exclusively in tbl_frame to avoid pack/grid conflict
+        ttk.Label(tbl_frame,
             text=f"Red = stop_frame within ±{THRESHOLD} frames of an adjacent clip's boundary",
-            foreground="red")
-        legend.pack(anchor=tk.W)
+            foreground="red").grid(row=0, column=0, columnspan=2, sticky="w")
 
         cols = ("clip_index", "ID", "Day", "time_point",
                 "start_frame", "stop_frame", "n_frames", "duration_s", "clip_filename")
