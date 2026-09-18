@@ -72,9 +72,9 @@ import pandas as pd
 # -----------------------------------------------------------------------------
 # Defaults
 # -----------------------------------------------------------------------------
-DEFAULT_CLIPS = Path(r"E:\ymaze\t1t2_and_clips")
+DEFAULT_CLIPS = Path(r"/Volumes/Shared/Shuting/P1-SNr/Ymaze/t1t2_and_clips")
 DEFAULT_CONTRACT = Path(
-    r"\\moorelaboratory.dts.usc.edu\Shared\Shuting\P1-SNr\Figures-P1-SNr\Data\y-maze\ymaze_contract_hits_2daygroupStatistics.csv"
+    r"/Volumes/Shared/Shuting/P1-SNr/Ymaze/ymaze_contract_hits_2daygroupStatistics.csv"
 )
 DEFAULT_RAW_LOG_NAME = "ymaze_time_log_labeled v22June26.csv"
 VIDEO_EXTS = {".mp4", ".avi", ".mov", ".m4v", ".mpg", ".mpeg", ".wmv"}
